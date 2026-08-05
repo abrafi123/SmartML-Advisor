@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+
+<style>
+  .main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; width: 100% !important; }
+  body { background: #0a0d14 !important; }
+</style>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root { --bg:#0a0d14; --surface:#111520; --surface2:#161b2e; --border:rgba(255,255,255,0.07); --text:#e8eaf0; --text-muted:#7a8099; --accent:#4f8ef7; }
+  .auth-page { font-family:'Sora',sans-serif; background:var(--bg); min-height:100vh; color:var(--text); display:flex; align-items:center; justify-content:center; padding:40px 16px; position:relative; overflow:hidden; }
+  .auth-page::before { content:''; position:fixed; top:-200px; left:-200px; width:600px; height:600px; background:radial-gradient(circle,rgba(79,142,247,0.08) 0%,transparent 70%); pointer-events:none; z-index:0; }
+  .auth-page::after { content:''; position:fixed; bottom:-200px; right:-200px; width:600px; height:600px; background:radial-gradient(circle,rgba(168,85,247,0.07) 0%,transparent 70%); pointer-events:none; z-index:0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .auth-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:40px; width:100%; max-width:420px; position:relative; z-index:1; animation:fadeUp 0.5s ease both; }
+  .auth-logo { text-align:center; margin-bottom:32px; }
+  .auth-logo .logo-icon { width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg,#4f8ef7,#7c3aed); display:flex; align-items:center; justify-content:center; font-size:1.4rem; margin:0 auto 14px; }
+  .auth-logo h2 { font-size:1.35rem; font-weight:700; letter-spacing:-0.02em; color:#fff; margin-bottom:4px; }
+  .auth-logo p { font-size:0.82rem; color:var(--text-muted); font-weight:300; }
+  .form-group { margin-bottom:18px; }
+  .form-label { display:block; font-size:0.78rem; font-weight:500; color:var(--text-muted); margin-bottom:8px; font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.08em; }
+  .form-input { width:100%; padding:12px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:'Sora',sans-serif; font-size:0.88rem; outline:none; transition:border-color 0.2s; box-sizing:border-box; }
+  .form-input:focus { border-color:rgba(79,142,247,0.5); }
+  .form-input::placeholder { color:var(--text-muted); }
+  .submit-btn { width:100%; padding:13px; background:linear-gradient(135deg,#4f8ef7,#7c3aed); border:none; border-radius:11px; color:#fff; font-family:'Sora',sans-serif; font-size:0.92rem; font-weight:600; cursor:pointer; margin-top:8px; transition:opacity 0.2s,transform 0.15s; }
+  .submit-btn:hover:not(:disabled) { opacity:0.9; transform:translateY(-1px); }
+  .submit-btn:disabled { opacity:0.6; cursor:not-allowed; }
+  .auth-footer { text-align:center; margin-top:20px; font-size:0.82rem; color:var(--text-muted); font-weight:300; }
+  .auth-footer a { color:var(--accent); text-decoration:none; font-weight:500; }
+  .auth-footer a:hover { text-decoration:underline; }
+  .error-box { display:none; padding:11px 16px; background:rgba(244,63,142,0.08); border:1px solid rgba(244,63,142,0.2); border-radius:10px; font-size:0.82rem; color:#f472b6; margin-bottom:18px; }
+</style>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      
+      <h2>Welcome Back</h2>
+      <p>Sign in to your SmartML Advisor account</p>
+    </div>
+    <div class="error-box" id="error-div"></div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" id="email" class="form-input" placeholder="Enter your email" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" id="password" class="form-input" placeholder="Enter your password" onkeypress="if(event.key==='Enter') login()">
+    </div>
+    <button onclick="login()" class="submit-btn" id="login-btn">Sign In</button>
+    <div class="auth-footer">Don't have an account? <a href="/register">Create one</a></div>
+  </div>
+</div>
+
+<script>
+async function login() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('login-btn');
+  if (!email || !password) { showError('Please enter email and password.'); return; }
+  btn.disabled = true; btn.textContent = '⏳ Signing in...';
+  try {
+    const res = await fetch('/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password}) });
+    const data = await res.json();
+    if (res.ok) { window.location.href = '/dashboard'; }
+    else { showError(data.detail || 'Login failed. Please try again.'); btn.disabled = false; btn.textContent = 'Sign In'; }
+  } catch(err) { showError('Server error. Please try again.'); btn.disabled = false; btn.textContent = 'Sign In'; }
+}
+function showError(msg) { const el = document.getElementById('error-div'); el.textContent = msg; el.style.display = 'block'; }
+</script>
+{% endblock %}

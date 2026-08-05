@@ -1,0 +1,365 @@
+
+{% extends "base.html" %}
+{% block title %}Home - SmartML Advisor{% endblock %}
+{% block content %}
+
+<style>
+  .main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; width: 100% !important; }
+  body { background: #0a0d14 !important; }
+</style>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161b2e;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8eaf0;
+    --text-muted: #7a8099;
+    --accent: #4f8ef7;
+  }
+
+  .home-page {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* Glow blobs */
+  .home-page::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(79,142,247,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    animation: drift 14s ease-in-out infinite alternate;
+    z-index: 0;
+  }
+  .home-page::after {
+    content: '';
+    position: fixed;
+    bottom: -200px; right: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(168,85,247,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    animation: drift 18s ease-in-out infinite alternate-reverse;
+    z-index: 0;
+  }
+
+  @keyframes drift { from { transform: translate(0,0); } to { transform: translate(40px,30px); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .home-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 80px 32px 100px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    margin-bottom: 80px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(79,142,247,0.1);
+    border: 1px solid rgba(79,142,247,0.2);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .hero-badge::before { content: '●'; font-size: 0.5rem; }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fff 30%, #7aa8ff 70%, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+  }
+  .hero p {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    max-width: 520px;
+    margin: 0 auto 36px;
+    line-height: 1.7;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-hero-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 28px;
+    background: linear-gradient(135deg, #4f8ef7, #7c3aed);
+    border: none;
+    border-radius: 12px;
+    color: #fff !important;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: opacity 0.2s, transform 0.15s;
+    cursor: pointer;
+  }
+  .btn-hero-primary:hover { opacity: 0.9; transform: translateY(-2px); color: #fff !important; }
+
+  .btn-hero-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 28px;
+    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    border: none;
+    border-radius: 12px;
+    color: #fff !important;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .btn-hero-secondary:hover { opacity: 0.9; transform: translateY(-2px); color: #fff !important; }
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    margin-bottom: 80px;
+    padding: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    animation: fadeUp 0.7s ease both;
+    animation-delay: 0.1s;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-item .num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #4f8ef7, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-item .lbl {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* Features */
+  .section-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 12px;
+    animation: fadeUp 0.7s ease both;
+    animation-delay: 0.15s;
+  }
+  .section-title {
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    text-align: center;
+    color: #fff;
+    margin-bottom: 48px;
+    animation: fadeUp 0.7s ease both;
+    animation-delay: 0.2s;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 80px;
+    animation: fadeUp 0.8s ease both;
+    animation-delay: 0.25s;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 16px 16px 0 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .feature-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-card:nth-child(1)::before { background: linear-gradient(90deg, #4f8ef7, #7aa8ff); }
+  .feature-card:nth-child(2)::before { background: linear-gradient(90deg, #a855f7, #c084fc); }
+  .feature-card:nth-child(3)::before { background: linear-gradient(90deg, #22d3a5, #4ade80); }
+  .feature-card:nth-child(4)::before { background: linear-gradient(90deg, #f97316, #fbbf24); }
+
+  .feature-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
+  .feature-card:nth-child(1) .feature-icon { background: rgba(79,142,247,0.12); }
+  .feature-card:nth-child(2) .feature-icon { background: rgba(168,85,247,0.12); }
+  .feature-card:nth-child(3) .feature-icon { background: rgba(34,211,165,0.12); }
+  .feature-card:nth-child(4) .feature-icon { background: rgba(249,115,22,0.12); }
+
+  .feature-card h3 { font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 8px; letter-spacing: -0.01em; }
+  .feature-card p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; font-weight: 300; }
+
+  /* CTA bottom */
+  .cta-bottom {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px;
+    text-align: center;
+    animation: fadeUp 0.8s ease both;
+    animation-delay: 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-bottom::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center top, rgba(79,142,247,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .cta-bottom h2 {
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .cta-bottom p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 300;
+    margin-bottom: 28px;
+  }
+
+  @media (max-width: 600px) {
+    .home-inner { padding: 48px 16px 80px; }
+    .stats-bar { gap: 24px; }
+    .cta-bottom { padding: 32px 20px; }
+  }
+</style>
+
+<div class="home-page">
+  <div class="home-inner">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-badge">SmartML Advisor</div>
+      <h1>Find the Right ML<br>Algorithm for Your Data</h1>
+      <p>Upload your dataset and get instant, intelligent recommendations for the best machine learning algorithms — powered by AI.</p>
+      <div class="hero-btns">
+        <a href="/login" class="btn-hero-primary"> Login</a>
+        <a href="/register" class="btn-hero-secondary"> Create Account</a>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="num">19+</div>
+        <div class="lbl">Algorithms</div>
+      </div>
+      <div class="stat-item">
+        <div class="num">CSV</div>
+        <div class="lbl">Excel · JSON</div>
+      </div>
+      <div class="stat-item">
+        <div class="num">AI</div>
+        <div class="lbl">Powered</div>
+      </div>
+      <div class="stat-item">
+        <div class="num">Free</div>
+        <div class="lbl">To Use</div>
+      </div>
+    </div>
+
+    <!-- Features -->
+    
+    <div class="section-title">Everything You Need</div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Automatic Data Analysis</h3>
+        <p>Upload any dataset and get a full profile — missing values, data types, distributions, and more.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>Smart ML Recommendations</h3>
+        <p>Get ranked algorithm suggestions with confidence scores tailored to your specific dataset.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>Analysis History</h3>
+        <p>All your past analyses are saved. Revisit results and compare algorithms across datasets.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Fast & Accurate</h3>
+        <p>Results in seconds. No manual feature engineering required — just upload and get insights.</p>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-bottom">
+      <h2>Ready to Get Started?</h2>
+      <p>Create a free account and upload your first dataset today.</p>
+      <a href="/register" class="btn-hero-primary">Get Started for Free →</a>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

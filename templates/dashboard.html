@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<style>
+  .main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; width: 100% !important; }
+  body { background: #0a0d14 !important; }
+  .dash-page { margin-top: 0; }
+</style>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161b2e;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8eaf0;
+    --text-muted: #7a8099;
+    --accent: #4f8ef7;
+    --accent-glow: rgba(79,142,247,0.15);
+    --green: #22d3a5;
+    --red: #f43f8e;
+    --yellow: #eab308;
+  }
+
+  .dash-page {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 48px 32px 80px;
+    color: var(--text);
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .dash-page::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(79,142,247,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    animation: drift 14s ease-in-out infinite alternate;
+    z-index: 0;
+  }
+
+  @keyframes drift { from { transform: translate(0,0); } to { transform: translate(40px,30px); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  .dash-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* Header */
+  .dash-header {
+    margin-bottom: 48px;
+    animation: fadeUp 0.5s ease both;
+  }
+  .dash-header .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .dash-header h1 {
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #fff 30%, #7aa8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .dash-header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 300;
+  }
+
+  /* Stat Cards */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease both;
+    animation-delay: 0.1s;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.12);
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 16px 16px 0 0;
+  }
+  .stat-card.blue::before { background: linear-gradient(90deg, #4f8ef7, #7aa8ff); }
+  .stat-card.green::before { background: linear-gradient(90deg, #22d3a5, #4ade80); }
+  .stat-card.red::before { background: linear-gradient(90deg, #f43f8e, #fb923c); }
+
+  .stat-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+  }
+  .stat-card.blue .stat-icon { background: rgba(79,142,247,0.12); }
+  .stat-card.green .stat-icon { background: rgba(34,211,165,0.12); }
+  .stat-card.red .stat-icon { background: rgba(244,63,142,0.12); }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  .stat-card.blue .stat-value { color: #7aa8ff; }
+  .stat-card.green .stat-value { color: #22d3a5; }
+  .stat-card.red .stat-value { color: #f472b6; font-size: 1.1rem; margin-top: 6px; }
+
+  /* Bottom row */
+  .dash-bottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    animation: fadeUp 0.7s ease both;
+    animation-delay: 0.2s;
+  }
+
+  @media (max-width: 640px) {
+    .dash-bottom { grid-template-columns: 1fr; }
+    .dash-page { padding: 24px 16px 60px; }
+  }
+
+  .dash-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  .dash-card-title {
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  /* Upload CTA */
+  .upload-cta h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .upload-cta p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.6;
+    margin-bottom: 22px;
+  }
+  .btn-primary-dash {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    background: linear-gradient(135deg, #4f8ef7, #7c3aed);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .btn-primary-dash:hover { opacity: 0.9; transform: translateY(-1px); color: #fff; }
+
+  /* Recent uploads */
+  .recent-empty {
+    text-align: center;
+    padding: 32px 0;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 300;
+  }
+  .recent-empty .empty-icon { font-size: 2rem; margin-bottom: 10px; display: block; opacity: 0.4; }
+
+  .recent-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .recent-item:last-child { border-bottom: none; }
+  .recent-item .ri-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: rgba(79,142,247,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; flex-shrink: 0;
+  }
+  .recent-item .ri-name {
+    font-size: 0.82rem; color: var(--text); font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 160px;
+  }
+  .recent-item .ri-date { font-size: 0.72rem; color: var(--text-muted); font-weight: 300; }
+  .ri-status {
+    margin-left: auto;
+    font-size: 0.68rem;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .ri-status.done { background: rgba(34,211,165,0.1); color: #22d3a5; border: 1px solid rgba(34,211,165,0.2); }
+  .ri-status.fail { background: rgba(244,63,142,0.1); color: #f472b6; border: 1px solid rgba(244,63,142,0.2); }
+</style>
+
+<div class="dash-page">
+  <div class="dash-inner">
+
+    <!-- Header -->
+    <div class="dash-header">
+      <div class="eyebrow">SmartML Advisor</div>
+      <h1>Welcome, {{ user.full_name or user.username }}</h1>
+      <p>Here's an overview of your ML analysis activity.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-grid">
+      <div class="stat-card blue">
+       
+        <div class="stat-label">Total Uploads</div>
+        <div class="stat-value">{{ total_uploads }}</div>
+      </div>
+      <div class="stat-card green">
+        
+        <div class="stat-label">Analyses Done</div>
+        <div class="stat-value">{{ total_reports }}</div>
+      </div>
+      <div class="stat-card red">
+       
+        <div class="stat-label">Last Best Algorithm</div>
+        <div class="stat-value">
+          {% if uploads and uploads[0].upload_status == 'completed' %}
+            View Result
+          {% else %}
+            N/A
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom -->
+    <div class="dash-bottom">
+
+      <!-- Upload CTA -->
+      <div class="dash-card upload-cta">
+        <div class="dash-card-title">Get Started</div>
+        <h3>Analyze a New Dataset</h3>
+        <p>Upload a CSV, Excel, or JSON file to get instant ML algorithm recommendations tailored to your data.</p>
+        <a href="/upload" class="btn-primary-dash"> Upload Dataset</a>
+      </div>
+
+      <!-- Recent Uploads -->
+      <div class="dash-card">
+        <div class="dash-card-title">Recent Uploads</div>
+        {% if uploads %}
+          {% for u in uploads[:5] %}
+          <div class="recent-item">
+            <div class="ri-icon">📄</div>
+            <div>
+              <div class="ri-name">{{ u.original_filename }}</div>
+              <div class="ri-date">{{ u.created_at.strftime('%b %d, %Y') if u.created_at else '' }}</div>
+            </div>
+            {% if u.upload_status == 'completed' %}
+              <span class="ri-status done">done</span>
+            {% else %}
+              <span class="ri-status fail">{{ u.upload_status }}</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="recent-empty">
+            <span class="empty-icon">📭</span>
+            No uploads yet. Start by uploading a dataset!
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

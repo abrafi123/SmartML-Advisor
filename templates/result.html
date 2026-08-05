@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+{% block title %}Analysis Result{% endblock %}
+{% block content %}
+
+<style>
+  .main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; width: 100% !important; }
+  body { background: #0a0d14 !important; }
+</style>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161b2e;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8eaf0;
+    --text-muted: #7a8099;
+    --accent: #4f8ef7;
+    --green: #22d3a5;
+    --yellow: #eab308;
+    --red: #f43f8e;
+  }
+
+  .result-page {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text);
+    padding: 60px 32px 100px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .result-page::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(79,142,247,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  .result-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .result-header {
+    margin-bottom: 40px;
+    animation: fadeUp 0.5s ease both;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .result-header .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .result-header h1 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #fff 30%, #7aa8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-muted) !important;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none !important;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .back-btn:hover { border-color: rgba(255,255,255,0.2); color: #fff !important; }
+
+  /* Cards */
+  .r-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 16px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .r-card:nth-child(2) { animation-delay: 0.05s; }
+  .r-card:nth-child(3) { animation-delay: 0.1s; }
+  .r-card:nth-child(4) { animation-delay: 0.15s; }
+  .r-card:nth-child(5) { animation-delay: 0.2s; }
+
+  .r-card-title {
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* File info */
+  .file-info-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .file-icon-box {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: rgba(79,142,247,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .file-name { font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .file-status {
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(34,211,165,0.1);
+    color: #22d3a5;
+    border: 1px solid rgba(34,211,165,0.2);
+    display: inline-block;
+  }
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+  }
+  .stat-box .val {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 4px;
+  }
+  .stat-box .lbl {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .val-blue { color: #7aa8ff; }
+  .val-green { color: #22d3a5; }
+  .val-red { color: #f472b6; }
+  .val-yellow { color: #fbbf24; }
+
+  /* Recommendations */
+  .rec-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: border-color 0.2s;
+  }
+  .rec-item:hover { border-color: rgba(255,255,255,0.12); }
+  .rec-item.top { border-color: rgba(34,211,165,0.3); background: rgba(34,211,165,0.04); }
+
+  .rec-rank {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .rec-name {
+    flex: 1;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #fff;
+  }
+  .rec-badge {
+    font-size: 0.72rem;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 4px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .rec-item.top .rec-badge { background: rgba(34,211,165,0.1); color: #22d3a5; border: 1px solid rgba(34,211,165,0.2); }
+  .rec-item:not(.top) .rec-badge { background: rgba(79,142,247,0.1); color: #7aa8ff; border: 1px solid rgba(79,142,247,0.2); }
+
+  /* Quality score bar */
+  .quality-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .quality-label { font-size: 0.82rem; color: var(--text-muted); font-weight: 300; min-width: 120px; }
+  .quality-track {
+    flex: 1;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .quality-fill {
+    height: 6px;
+    background: linear-gradient(90deg, #4f8ef7, #22d3a5);
+    border-radius: 10px;
+    transition: width 1s ease;
+  }
+  .quality-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #22d3a5;
+    font-weight: 600;
+    min-width: 48px;
+    text-align: right;
+  }
+
+  .report-summary {
+    font-size: 0.85rem;
+    color: #c5cae0;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+
+  @media (max-width: 600px) {
+    .result-page { padding: 32px 16px 80px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+
+<div class="result-page">
+  <div class="result-inner">
+
+    <div class="result-header">
+      <div>
+       
+        <h1>Analysis Result</h1>
+      </div>
+      <a href="/history" class="back-btn">← Back to History</a>
+    </div>
+
+    {% if upload %}
+
+    <!-- File Info -->
+    <div class="r-card">
+      <div class="r-card-title">📁 File Information</div>
+      <div class="file-info-row">
+        <div class="file-icon-box">📄</div>
+        <div>
+          <div class="file-name">{{ upload.original_filename }}</div>
+          <span class="file-status">{{ upload.upload_status }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dataset Overview -->
+    {% if profile %}
+    <div class="r-card">
+      <div class="r-card-title">📊 Dataset Overview</div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="val val-blue">{{ profile.total_rows }}</div>
+          <div class="lbl">Total Rows</div>
+        </div>
+        <div class="stat-box">
+            <div class="val val-blue">{{ profile.total_columns }}</div>
+          <div class="lbl">Total Columns</div>
+        </div>
+        <div class="stat-box">
+          <div class="val val-green" style="font-size:1.1rem; padding-top:6px;">{{ profile.problem_type }}</div>
+          <div class="lbl">Problem Type</div>
+        </div>
+        <div class="stat-box">
+          <div class="val val-red">{{ "%.1f"|format(profile.missing_value_percentage) }}%</div>
+          <div class="lbl">Missing Values</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Recommendations -->
+    {% if recommendations %}
+    <div class="r-card">
+      <div class="r-card-title">🧠 ML Algorithm Recommendations</div>
+      {% for rec in recommendations %}
+      <div class="rec-item {% if loop.first %}top{% endif %}">
+        <div class="rec-rank">
+          {% if loop.first %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}#{{ loop.index }}{% endif %}
+        </div>
+        <div class="rec-name">{{ rec.algorithm.name if rec.algorithm else "Algorithm" }}</div>
+        <span class="rec-badge">{{ "%.0f"|format(rec.confidence_score) }}%</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Report Summary -->
+    {% if report %}
+    <div class="r-card">
+      <div class="r-card-title">📋 Report Summary</div>
+      <div class="quality-row">
+        <div class="quality-label">Data Quality Score</div>
+        <div class="quality-track">
+          <div class="quality-fill" style="width: {{ report.data_quality_score }}%"></div>
+        </div>
+        <div class="quality-val">{{ report.data_quality_score }}/100</div>
+      </div>
+      <div class="report-summary">{{ report.report_summary }}</div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="r-card" style="text-align:center; padding:60px 32px;">
+      <div style="font-size:2.5rem; margin-bottom:16px; opacity:0.4;">📊</div>
+      <h3 style="color:#fff; margin-bottom:8px;">No Analysis Found</h3>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:24px;">Upload a dataset to get started.</p>
+      <a href="/upload" style="display:inline-flex; align-items:center; gap:8px; padding:11px 22px; background:linear-gradient(135deg,#4f8ef7,#7c3aed); border-radius:10px; color:#fff !important; text-decoration:none; font-size:0.85rem; font-weight:600;">📤 Upload Dataset</a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}

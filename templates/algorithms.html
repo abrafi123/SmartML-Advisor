@@ -1,0 +1,882 @@
+{% extends "base.html" %}
+{% block title %}ML Algorithms{% endblock %}
+{% block content %}
+
+<style>
+  .main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
+  body { background: #0a0d14 !important; }
+</style>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161b2e;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8eaf0;
+    --text-muted: #7a8099;
+    --sup-accent: #4f8ef7;
+    --sup-glow: rgba(79,142,247,0.15);
+    --unsup-accent: #a855f7;
+    --unsup-glow: rgba(168,85,247,0.15);
+    --green: #22d3a5;
+    --orange: #f97316;
+    --pink: #f43f8e;
+    --yellow: #eab308;
+  }
+
+  * { box-sizing: border-box; }
+
+  .algo-page {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 48px 32px 120px;
+    color: var(--text);
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .algo-page::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(79,142,247,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    animation: drift 12s ease-in-out infinite alternate;
+    z-index: 0;
+  }
+  .algo-page::after {
+    content: '';
+    position: fixed;
+    bottom: -200px; right: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(168,85,247,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    animation: drift 16s ease-in-out infinite alternate-reverse;
+    z-index: 0;
+  }
+  @keyframes drift { from { transform: translate(0,0); } to { transform: translate(40px,30px); } }
+
+  .page-header {
+    max-width: 1200px;
+    margin: 0 auto 56px;
+    animation: fadeUp 0.6s ease both;
+    position: relative; z-index: 1;
+  }
+  .page-header .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--sup-accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .page-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #fff 30%, #7aa8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  .page-header .subtitle-bn {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-bottom: 6px;
+  }
+  .page-header p {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    font-weight: 300;
+    max-width: 520px;
+    line-height: 1.6;
+  }
+
+  .section-block {
+    max-width: 1200px;
+    margin: 0 auto 64px;
+    animation: fadeUp 0.7s ease both;
+    position: relative; z-index: 1;
+  }
+  .section-block:nth-child(3) { animation-delay: 0.1s; }
+  .section-block:nth-child(4) { animation-delay: 0.2s; }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .section-label .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .section-label h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .section-label .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .section-label .desc-en {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    margin-left: auto;
+    font-weight: 300;
+  }
+  .section-bn {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    padding-left: 24px;
+    font-weight: 300;
+    font-style: italic;
+  }
+
+  .sup .dot { background: var(--sup-accent); box-shadow: 0 0 8px var(--sup-accent); }
+  .sup .section-label h2 { color: var(--sup-accent); }
+  .sup .count { background: var(--sup-glow); color: var(--sup-accent); border: 1px solid rgba(79,142,247,0.2); 
+  }
+  .unsup .dot { background: var(--unsup-accent); box-shadow: 0 0 8px var(--unsup-accent); }
+  .unsup .section-label h2 { color: var(--unsup-accent); }
+  .unsup .count { background: var(--unsup-glow); color: var(--unsup-accent); border: 1px solid rgba(168,85,247,0.2); }
+
+  .subsection-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin: 32px 0 16px;
+    padding-left: 2px;
+  }
+
+  .algo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .algo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 20px 18px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    z-index: 1;
+  }
+  .algo-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .algo-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,255,255,0.14);
+  }
+  .sup .algo-card::before { background: linear-gradient(90deg, var(--sup-accent), #7aa8ff); }
+  .sup .algo-card:hover { box-shadow: 0 8px 32px rgba(79,142,247,0.15); }
+  .unsup .algo-card::before { background: linear-gradient(90deg, var(--unsup-accent), #c084fc); }
+  .unsup .algo-card:hover { box-shadow: 0 8px 32px rgba(168,85,247,0.15); }
+
+  .card-icon { font-size: 1.4rem; margin-bottom: 10px; display: block; }
+  .card-name { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 4px; letter-spacing: -0.01em; }
+  .card-name-bn { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 300; }
+  .card-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 14px; font-weight: 300; }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 0.68rem;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .tag-blue   { background: rgba(79,142,247,0.12);  color: #7aa8ff;  border: 1px solid rgba(79,142,247,0.2); }
+  .tag-purple { background: rgba(168,85,247,0.12); color: #c084fc; border: 1px solid rgba(168,85,247,0.2); }
+  .tag-green  { background: rgba(34,211,165,0.1);  color: #22d3a5; border: 1px solid rgba(34,211,165,0.2); }
+  .tag-orange { background: rgba(249,115,22,0.1);  color: #fb923c; border: 1px solid rgba(249,115,22,0.2); }
+  .tag-pink   { background: rgba(244,63,142,0.1);  color: #f472b6; border: 1px solid rgba(244,63,142,0.2); }
+  .tag-yellow { background: rgba(234,179,8,0.1);   color: #fbbf24; border: 1px solid rgba(234,179,8,0.2); }
+
+  .card-arrow {
+    position: absolute; top: 20px; right: 18px;
+    color: var(--text-muted); font-size: 0.85rem;
+    opacity: 0; transition: opacity 0.2s, transform 0.2s;
+  }
+  .algo-card:hover .card-arrow { opacity: 1; transform: translate(2px,-2px); }
+
+  /* ── MODAL ── */
+  .modal-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    max-width: 640px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 36px;
+    position: relative;
+    animation: slideUp 0.25s ease;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+  @keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; 
+  } 
+}
+.modal-close {
+    position: absolute; top: 18px; right: 18px;
+    background: rgba(255,255,255,0.07); border: none; color: var(--text-muted);
+    width: 32px; height: 32px; border-radius: 8px;
+    cursor: pointer; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+  .modal-icon { font-size: 2.2rem; margin-bottom: 12px; display: block; }
+  .modal-name { font-size: 1.35rem; font-weight: 700; color: #fff; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .modal-name-bn { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 300; }
+  .modal-category { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px; }
+  .modal-divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+  .modal-section-title {
+    font-size: 0.68rem; font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--text-muted); margin-bottom: 8px;
+  }
+  .modal-text { font-size: 0.87rem; color: #c5cae0; line-height: 1.75; font-weight: 300; margin-bottom: 20px; }
+  .modal-text-bn { font-size: 0.82rem; color: var(--text-muted); line-height: 1.7; font-weight: 300; margin-bottom: 20px; font-style: italic; }
+
+  .use-cases { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .use-case {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px;
+    font-size: 0.78rem; color: var(--text-muted);
+  }
+
+  .modal-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+
+  .chatbot-btn {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #4f8ef7, #7c3aed);
+    border: none; border-radius: 12px; color: #fff;
+    font-family: 'Sora', sans-serif; font-size: 0.9rem; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    gap: 8px; transition: opacity 0.2s, transform 0.15s;
+  }
+  .chatbot-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .chatbot-btn .btn-bn { font-size: 0.75rem; font-weight: 300; opacity: 0.8; }
+
+  /* ── CHATBOT ── */
+  .chatbot-panel {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 380px; max-height: 90vh;height:520px;
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    display: flex; flex-direction: column;
+    z-index: 99998;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    transform: translateY(20px) scale(0.95);
+    opacity: 0; pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .chatbot-panel.open { transform: translateY(0) scale(1); opacity: 1; pointer-events: all; }
+
+  .chat-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  }
+  .chat-avatar {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, #4f8ef7, #7c3aed);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .chat-header-info { flex: 1; }
+  .chat-header-info .name { font-size: 0.88rem; font-weight: 600; color: #fff; }
+  .chat-header-info .name-bn { font-size: 0.7rem; color: var(--text-muted); font-weight: 300; }
+  .chat-header-info .status { font-size: 0.7rem; color: var(--green); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+  .chat-header-info .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }
+  .chat-close {
+    background: rgba(255,255,255,0.06); border: none; color: var(--text-muted);
+    width: 28px; height: 28px; border-radius: 7px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+    transition: background 0.2s;
+  }
+  .chat-close:hover { background: rgba(255,255,255,0.12); color: #fff; 
+  }
+  .chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;        /* ← যোগ করুন */
+  max-height: 340px;    /* ← যোগ করুন */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.08) transparent;
+}
+  
+  .msg {
+    max-width: 85%; padding: 10px 14px; border-radius: 14px;
+    font-size: 0.82rem; line-height: 1.55;
+    animation: msgIn 0.2s ease;
+  }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .msg.bot { background: var(--surface2); border: 1px solid var(--border); color: #c5cae0; align-self: flex-start; border-bottom-left-radius: 4px; }
+  .msg.user { background: linear-gradient(135deg, #4f8ef7, #7c3aed); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; font-weight: 500; }
+  .msg.typing { color: var(--text-muted); font-style: italic; }
+
+  .chat-input-area {
+    padding: 12px 16px; border-top: 1px solid var(--border);
+    display: flex; gap: 8px; flex-shrink: 0;
+  }
+  .chat-input {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px; color: var(--text);
+    font-family: 'Sora', sans-serif; font-size: 0.82rem; outline: none;
+    transition: border-color 0.2s;
+  }
+  .chat-input:focus { border-color: rgba(79,142,247,0.4); }
+  .chat-input::placeholder { color: var(--text-muted); }
+  .chat-send {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #4f8ef7, #7c3aed);
+    border: none; border-radius: 10px; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+    transition: opacity 0.2s, transform 0.15s; flex-shrink: 0;
+  }
+  .chat-send:hover { opacity: 0.9; transform: scale(1.05); }
+
+  .chat-fab {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 54px; height: 54px;
+    background: linear-gradient(135deg, #4f8ef7, #7c3aed);
+    border: none; border-radius: 50%; color: #fff; font-size: 1.4rem;
+    cursor: pointer; box-shadow: 0 8px 24px rgba(79,142,247,0.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 99997; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .chat-fab:hover { transform: scale(1.08); box-shadow: 0 12px 32px rgba(79,142,247,0.5); }
+  .chat-fab.hidden { display: none; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 600px) {
+    .algo-page { padding: 24px 14px 100px; }
+    .chatbot-panel { width: calc(100vw - 28px); right: 14px; bottom: 14px; }
+    .section-label .desc-en { display: none; }
+  }
+</style>
+
+<div class="algo-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="eyebrow">SmartML Advisor</div>
+    <h1>ML Algorithm </h1>
+    
+  </div>
+
+  <!-- SUPERVISED -->
+  <div class="section-block sup">
+    <div class="section-label">
+      <span class="dot"></span>
+      <h2>Supervised Learning</h2>
+      <span class="count">12 algorithms</span>
+      <span class="desc-en">Labeled data → learns input-output mapping</span>
+    </div>
+    <div class="section-bn">Learns from labeled data — gives correct output given input</div>
+
+    <div class="subsection-title">Stage 1 — Regression</div>
+    <div class="algo-grid">
+      <div class="algo-card" data-algo="slr">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Simple Linear Regression</div>
+        
+        <div class="card-desc">Learns slope, intercept and prediction line to model a single feature.</div>
+        <div class="card-tags"><span class="tag tag-blue">Regression</span><span class="tag tag-green">Continuous Output</span></div>
+      </div>
+      <div class="algo-card" data-algo="mlr">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Multiple Linear Regression</div>
+        
+        <div class="card-desc">Uses multiple independent variables to improve prediction accuracy.</div>
+        <div class="card-tags"><span class="tag tag-blue">Regression</span><span class="tag tag-orange">Multi-feature</span></div>
+      </div>
+      <div class="algo-card" data-algo="poly">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Polynomial Regression</div>
+        
+        <div class="card-desc">Fits non-linear curves using polynomial terms of features.</div>
+        <div class="card-tags"><span class="tag tag-blue">Regression</span><span class="tag tag-pink">Non-linear</span></div>
+      </div>
+    </div>
+
+    <div class="subsection-title">Stage 2 — Classification Basics</div>
+    <div class="algo-grid">
+      <div class="algo-card" data-algo="dt">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Decision Tree</div>
+       
+        <div class="card-desc">Rule-based model using if-else conditions to split data at each node.</div>
+        <div class="card-tags"><span class="tag tag-green">Classification</span><span class="tag tag-blue">Regression</span></div>
+      </div>
+      <div class="algo-card" data-algo="nb">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Naïve Bayes</div>
+        
+        <div class="card-desc">Probabilistic classifier based on Bayes theorem with feature independence.</div>
+        <div class="card-tags"><span class="tag tag-purple">Probabilistic</span><span class="tag tag-green">Classification</span></div>
+      </div>
+      <div class="algo-card" data-algo="knn">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">K-Nearest Neighbors</div>
+       
+        <div class="card-desc">Classifies by neighbor similarity — finds K closest data points.</div>
+        <div class="card-tags"><span class="tag tag-purple">Classification</span><span class="tag tag-blue">Distance-based</span></div>
+      </div>
+      <div class="algo-card" data-algo="svm">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Support Vector Machine</div>
+       
+        <div class="card-desc">Powerful classifier that finds optimal hyperplanes to separate classes.</div>
+        <div class="card-tags"><span class="tag tag-pink">Classification</span><span class="tag tag-orange">High-dimensional</span></div>
+      </div>
+    </div>
+
+    <div class="subsection-title">Stage 3 — Advanced Models</div>
+    <div class="algo-grid">
+      <div class="algo-card" data-algo="rf">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Random Forest</div>
+       
+        <div class="card-desc">Ensemble of decision trees using bagging to build a stronger model.</div>
+        <div class="card-tags"><span class="tag tag-green">Ensemble</span><span class="tag tag-blue">Bagging</span></div>
+        </div>
+      <div class="algo-card" data-algo="xgb">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">XGBoost</div>
+       
+        <div class="card-desc">High-performance gradient boosting framework for structured data.</div>
+        <div class="card-tags"><span class="tag tag-yellow">Boosting</span><span class="tag tag-orange">High Performance</span></div>
+      </div>
+      <div class="algo-card" data-algo="nn">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Neural Network</div>
+       
+        <div class="card-desc">Layered nodes mimicking the brain — excels at complex pattern recognition.</div>
+        <div class="card-tags"><span class="tag tag-pink">Deep Learning</span><span class="tag tag-purple">Non-linear</span></div>
+      </div>
+      <div class="algo-card" data-algo="rs">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Recommender Systems</div>
+       
+        <div class="card-desc">Collaborative and content-based filtering for personalized suggestions.</div>
+        <div class="card-tags"><span class="tag tag-blue">Collaborative</span><span class="tag tag-green">Content-based</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNSUPERVISED -->
+  <div class="section-block unsup">
+    <div class="section-label">
+      <span class="dot"></span>
+      <h2>Unsupervised Learning</h2>
+      <span class="count">7 algorithms</span>
+      <span class="desc-en">No labels → finds hidden structure in data</span>
+    </div>
+    <div class="section-bn">No labels — finds hidden patterns in data</div>
+
+    <div class="subsection-title">Stage 4 — Clustering</div>
+    <div class="algo-grid">
+      <div class="algo-card" data-algo="kmeans">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">K-Means Clustering</div>
+       
+        <div class="card-desc">Groups similar data points into K clusters by minimizing intra-cluster distance.</div>
+        <div class="card-tags"><span class="tag tag-purple">Clustering</span><span class="tag tag-blue">Centroid-based</span></div>
+      </div>
+      <div class="algo-card" data-algo="kmedoids">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">K-Medoids / Mini-Batch K-Means</div>
+       
+        <div class="card-desc">Modified K-Means variants optimized for robustness and large datasets.</div>
+        <div class="card-tags"><span class="tag tag-purple">Clustering</span><span class="tag tag-orange">Scalable</span></div>
+      </div>
+      <div class="algo-card" data-algo="hier">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Hierarchical Clustering</div>
+       
+        <div class="card-desc">Builds a tree-like dendrogram of clusters without needing a pre-set K.</div>
+        <div class="card-tags"><span class="tag tag-purple">Clustering</span><span class="tag tag-green">Dendrogram</span></div>
+      </div>
+      <div class="algo-card" data-algo="som">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Self-Organizing Maps (SOM)</div>
+        
+        <div class="card-desc">Neural network-based clustering that maps high-dimensional data to 2D grids.</div>
+        <div class="card-tags"><span class="tag tag-pink">Neural-based</span><span class="tag tag-blue">Visualization</span></div>
+      </div>
+      <div class="algo-card" data-algo="fuzzy">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Fuzzy C-Means</div>
+        
+        <div class="card-desc">Soft clustering — each data point belongs to multiple clusters with membership degrees.</div>
+        <div class="card-tags"><span class="tag tag-purple">Soft Clustering</span><span class="tag tag-yellow">Fuzzy Logic</span></div>
+      </div>
+    </div>
+
+    <div class="subsection-title">Stage 5 — Sequential / Probabilistic</div>
+    <div class="algo-grid">
+      <div class="algo-card" data-algo="hmm">
+        <span class="card-arrow">↗</span>
+        <div class="card-name">Hidden Markov Model (HMM)</div>
+        
+        <div class="card-desc">Sequential probabilistic model where hidden states produce observed outputs over time.</div>
+        <div class="card-tags"><span class="tag tag-blue">Sequential</span><span class="tag tag-purple">Probabilistic</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .algo-page -->
+
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalBox">
+    <button class="modal-close" id="modalCloseBtn">✕</button>
+    <span class="modal-icon" id="mIcon"></span>
+    <div class="modal-name" id="mName"></div>
+    <div class="modal-name-bn" id="mNameBn"></div>
+    <div class="modal-category" id="mCat"></div>
+    <hr class="modal-divider">
+    <div class="modal-section-title">How It Works</div>
+    <div class="modal-text" id="mHow"></div>
+    
+    <div class="modal-text-bn" id="mHowBn"></div>
+    <div class="modal-section-title">Use Cases</div>
+    <div class="use-cases" id="mUses"></div>
+    <div class="modal-section-title">Tags</div>
+    <div class="modal-tags" id="mTags"></div>
+    <button class="chatbot-btn" id="modalChatBtn">
+      Ask SmartML Advisor &nbsp;<span class="btn-bn"></span>
+    </button>
+  </div>
+</div>
+
+
+<!-- CHATBOT -->
+<button class="chat-fab" id="chatFab">Chat</button>
+
+<div class="chatbot-panel" id="chatPanel">
+  <div class="chat-header">
+    <div class="chat-avatar">ML</div>
+    <div class="chat-header-info">
+      <div class="name">SmartML advisor</div>
+      <div class="name-bn">ML Advisor</div>
+      <div class="status">Online</div>
+    </div>
+    <button class="chat-close" id="chatCloseBtn">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="msg bot">Hi! I am your ML Advisor. Ask me anything about machine learning algorithms.</div>
+  </div>
+  <div class="chat-input-area">
+    <input class="chat-input" id="chatInput" placeholder="Ask in English ">
+    <button class="chat-send" id="chatSendBtn">Send</button>
+  </div>
+</div>
+
+
+<script>
+// ── ALGO DATA ──
+var ALGO_DATA = {
+  slr: {
+    icon:'', name:'Simple Linear Regression', 
+    cat:'Supervised → Regression',
+    how:'Finds the best-fit straight line through data by minimizing squared errors. Learns slope (m) and intercept (b) for equation y = mx + b.',
+    
+    uses:['House price prediction','Salary forecasting','Temperature modeling','Patient age estimation'],
+    tags:['<span class="tag tag-blue">Regression</span>','<span class="tag tag-green">Continuous Output</span>','<span class="tag tag-orange">Single Feature</span>']
+    },
+  mlr: {
+    icon:'', name:'Multiple Linear Regression', 
+    cat:'Supervised → Regression',
+    how:'Extends simple linear regression to use multiple independent variables simultaneously. Each feature gets its own weight coefficient.',
+    
+    uses:['Sales prediction','Disease risk scoring','Real estate valuation','Economic forecasting'],
+    tags:['<span class="tag tag-blue">Regression</span>','<span class="tag tag-orange">Multi-feature</span>','<span class="tag tag-green">Continuous Output</span>']
+  },
+  poly: {
+    icon:'', name:'Polynomial Regression', 
+    cat:'Supervised → Regression',
+    how:'Adds polynomial terms (x², x³) as features to model curved, non-linear relationships using the linear regression framework.',
+    
+    uses:['Growth curve modeling','Medicine dose-response','Physics trajectory','Epidemiological trends'],
+    tags:['<span class="tag tag-blue">Regression</span>','<span class="tag tag-pink">Non-linear</span>','<span class="tag tag-orange">Curve fitting</span>']
+  },
+  dt: {
+    icon:'', name:'Decision Tree', 
+    cat:'Supervised → Classification & Regression',
+    how:'Splits data recursively using if-else rules on feature thresholds. Each internal node is a decision, each leaf is a prediction. Highly interpretable.',
+   
+    uses:['Disease diagnosis','Loan approval','Customer churn','Fraud detection'],
+    tags:['<span class="tag tag-green">Classification</span>','<span class="tag tag-blue">Regression</span>','<span class="tag tag-yellow">Interpretable</span>']
+  },
+  nb: {
+    icon:'', name:'Naïve Bayes', 
+    cat:'Supervised → Classification',
+    how:'Applies Bayes theorem assuming all features are independent. Calculates class probabilities and picks the highest. Very fast and works well with text.',
+   
+    uses:['Spam filtering','Sentiment analysis','Text classification','Medical diagnosis'],
+    tags:['<span class="tag tag-purple">Probabilistic</span>','<span class="tag tag-green">Classification</span>','<span class="tag tag-blue">Text data</span>']
+  },
+  knn: {
+    icon:'', name:'K-Nearest Neighbors (KNN)', 
+    cat:'Supervised → Classification & Regression',
+    how:'No training phase. At prediction time, finds K closest points by distance and votes on the label. Simple but effective for smaller datasets.',
+   
+    uses:['Recommendation systems','Pattern recognition','Anomaly detection','Image classification'],
+    tags:['<span class="tag tag-purple">Classification</span>','<span class="tag tag-blue">Distance-based</span>','<span class="tag tag-orange">Instance-based</span>']
+  },
+  svm: {
+    icon:'', name:'Support Vector Machine (SVM)',
+    cat:'Supervised → Classification',
+    how:'Finds the maximum-margin hyperplane separating classes. Uses kernel tricks (RBF, polynomial) to handle non-linearly separable data in high dimensions.',
+    
+    uses:['Face recognition','Cancer classification','Text categorization','Image recognition'],
+    tags:['<span class="tag tag-pink">Classification</span>','<span class="tag tag-orange">Kernel methods</span>','<span class="tag tag-blue">High-dimensional</span>']
+    },
+  rf: {
+    icon:'', name:'Random Forest',
+    cat:'Supervised → Ensemble',
+    how:'Builds hundreds of decision trees on random data subsets (bagging). Final output is majority vote (classification) or average (regression). Robust and accurate.',
+   
+    uses:['Kaggle competitions','Medical diagnostics','Financial fraud','Churn prediction'],
+    tags:['<span class="tag tag-green">Ensemble</span>','<span class="tag tag-blue">Bagging</span>','<span class="tag tag-orange">Robust</span>']
+  },
+  xgb: {
+    icon:'', name:'XGBoost', 
+    cat:'Supervised → Ensemble (Boosting)',
+    how:'Builds trees sequentially where each tree corrects errors of previous ones (gradient boosting). Includes L1/L2 regularization. Industry-standard for tabular data.',
+   
+    uses:['Competition winning','Credit scoring','Churn prediction','CTR prediction'],
+    tags:['<span class="tag tag-yellow">Boosting</span>','<span class="tag tag-orange">High Performance</span>','<span class="tag tag-green">Regularized</span>']
+  },
+  nn: {
+    icon:'', name:'Neural Network',
+    cat:'Supervised → Deep Learning',
+    how:'Layers of connected nodes with learnable weights. Input → hidden layers with activation functions → output. Learns complex non-linear mappings from large data.',
+    
+    uses:['Image recognition','NLP','Speech synthesis','Complex patterns'],
+    tags:['<span class="tag tag-pink">Deep Learning</span>','<span class="tag tag-purple">Non-linear</span>','<span class="tag tag-blue">Universal approximator</span>']
+  },
+  rs: {
+    icon:'', name:'Recommender Systems',
+    cat:'Supervised → Collaborative / Content-based',
+    how:'Collaborative filtering uses user-item interaction history. Content-based filtering uses item features. Hybrid systems combine both for best results.',
+   
+    uses:['Netflix recommendations','Amazon products','Spotify playlists','E-commerce upsell'],
+    tags:['<span class="tag tag-blue">Collaborative</span>','<span class="tag tag-green">Content-based</span>','<span class="tag tag-orange">Personalization</span>']
+  },
+  kmeans: {
+    icon:'', name:'K-Means Clustering',
+    cat:'Unsupervised → Clustering',
+    how:'Assigns each point to nearest centroid, then recomputes centroids. Repeats until convergence. Requires K to be specified upfront.',
+   
+    uses:['Customer segmentation','Patient grouping','Document clustering','Image compression'],
+    tags:['<span class="tag tag-purple">Clustering</span>','<span class="tag tag-blue">Centroid-based</span>','<span class="tag tag-green">Iterative</span>']
+  },
+  kmedoids: {
+    icon:'', name:'K-Medoids / Mini-Batch K-Means', 
+    cat:'Unsupervised → Clustering',
+    how:'K-Medoids uses actual data points as centers (robust to outliers). Mini-Batch processes random subsets for speed on large datasets.',
+    
+    uses:['Large-scale clustering','Robust segmentation','Genomics','Anomaly detection'],
+    tags:['<span class="tag tag-purple">Clustering</span>','<span class="tag tag-orange">Scalable</span>','<span class="tag tag-yellow">Robust</span>']
+    },
+  hier: {
+    icon:'', name:'Hierarchical Clustering',
+    cat:'Unsupervised → Clustering',
+    how:'Builds a dendrogram by merging closest clusters (agglomerative) or splitting largest (divisive). No need to specify K — cut the tree at desired level.',
+    
+    uses:['Gene expression analysis','Document clustering','Social networks','Archaeological data'],
+    tags:['<span class="tag tag-purple">Clustering</span>','<span class="tag tag-green">Dendrogram</span>','<span class="tag tag-blue">No K required</span>']
+  },
+  som: {
+    icon:'', name:'Self-Organizing Maps (SOM)',
+    cat:'Unsupervised → Neural Clustering',
+    how:'Neural network trained with competitive learning that maps high-dimensional data onto a 2D grid while preserving topological relationships.',
+   
+    uses:['Data visualization','Dimensionality reduction','Pattern discovery','Network anomaly detection'],
+    tags:['<span class="tag tag-pink">Neural-based</span>','<span class="tag tag-blue">Visualization</span>','<span class="tag tag-purple">Topology-preserving</span>']
+  },
+  fuzzy: {
+    icon:'', name:'Fuzzy C-Means', 
+    cat:'Unsupervised → Soft Clustering',
+    how:'Unlike hard K-Means, assigns each point a membership degree (0-1) to every cluster. Points near boundaries can belong partially to multiple clusters.',
+    
+    uses:['Medical image segmentation','Pattern recognition','Remote sensing','Bioinformatics'],
+    tags:['<span class="tag tag-purple">Soft Clustering</span>','<span class="tag tag-yellow">Fuzzy Logic</span>','<span class="tag tag-pink">Probabilistic membership</span>']
+  },
+  hmm: {
+    icon:'', name:'Hidden Markov Model (HMM)',
+    cat:'Unsupervised → Sequential / Probabilistic',
+    how:'Models sequences where underlying states are hidden but observations are visible. Uses Viterbi algorithm to find the most likely state sequence.',
+   
+    uses:['Speech recognition','Disease progression','Gesture recognition','Financial time-series'],
+    tags:['<span class="tag tag-blue">Sequential</span>','<span class="tag tag-purple">Probabilistic</span>','<span class="tag tag-orange">Time-series</span>']
+  }
+};
+
+var currentAlgo = null;
+
+// ── MODAL ──
+function openModal(id) {
+  var d = ALGO_DATA[id];
+  if (!d) return;
+  currentAlgo = d;
+  document.getElementById('mIcon').textContent = d.icon;
+  document.getElementById('mName').textContent = d.name;
+  document.getElementById('mNameBn').textContent = d.nameBn;
+  document.getElementById('mCat').textContent = d.cat;
+  document.getElementById('mCat').style.color = d.cat.indexOf('Unsupervised') !== -1 ? '#a855f7' : '#4f8ef7';
+  document.getElementById('mHow').textContent = d.how;
+  document.getElementById('mHowBn').textContent = d.howBn;
+  document.getElementById('mUses').innerHTML = d.uses.map(function(u){ return '<span class="use-case">'+u+'</span>'; }).join('');
+  document.getElementById('mTags').innerHTML = d.tags.join('');
+  document.getElementById('modalBackdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalBackdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Attach click to all cards using data-algo attribute
+document.addEventListener('DOMContentLoaded', function() {
+  var cards = document.querySelectorAll('.algo-card');
+  cards.forEach(function(card) {
+    card.addEventListener('click', function() {
+      var algoId = this.getAttribute('data-algo');
+      if (algoId) openModal(algoId);
+    });
+  });
+});
+
+document.getElementById('modalBackdrop').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+document.getElementById('modalChatBtn').addEventListener('click', function() {
+  closeModal();
+  openChat();
+  if (currentAlgo) {
+    setTimeout(function() {
+      document.getElementById('chatInput').value = 'Tell me more about ' + currentAlgo.name;
+      sendMessage();
+    }, 400);
+  }
+});
+
+// ── CHATBOT ──
+var chatOpen = false;
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open', chatOpen);
+  document.getElementById('chatFab').classList.toggle('hidden', chatOpen);
+}
+function openChat() {
+  chatOpen = true;
+  document.getElementById('chatPanel').classList.add('open');
+  document.getElementById('chatFab').classList.add('hidden');
+}
+
+document.getElementById('chatFab').addEventListener('click', toggleChat);
+document.getElementById('chatCloseBtn').addEventListener('click', toggleChat);
+document.getElementById('chatSendBtn').addEventListener('click', sendMessage);
+document.getElementById('chatInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') sendMessage();
+});
+
+async function sendMessage() {
+  var input = document.getElementById('chatInput');
+  var text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addMsg(text, 'user');
+  var typing = addMsg('Thinking...... ⏳', 'bot typing');
+
+  try {
+    // ✅ FastAPI backend route এ POST করছি — CORS problem নেই
+    var res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    });
+    var data = await res.json();
+    typing.remove();
+    if (data.reply) {
+      addMsg(data.reply, 'bot');
+    } else if (data.error) {
+      addMsg('Error: ' + data.error, 'bot');
+    } else {
+      addMsg('Sorry, no response received.', 'bot');
+    }
+  } catch(err) {
+    typing.remove();
+    addMsg('Connection error. Please try again.', 'bot');
+  }
+}
+
+function addMsg(text, cls) {
+  var box = document.getElementById('chatMessages');
+  var div = document.createElement('div');
+  div.className = 'msg ' + cls;
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+</script>
+
+{% endblock %}

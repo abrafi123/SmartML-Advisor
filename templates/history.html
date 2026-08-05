@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+
+<style>
+  .main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; width: 100% !important; }
+  body { background: #0a0d14 !important; }
+</style>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161b2e;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8eaf0;
+    --text-muted: #7a8099;
+    --accent: #4f8ef7;
+    --green: #22d3a5;
+    --red: #f43f8e;
+    --yellow: #eab308;
+  }
+
+  .history-page {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text);
+    padding: 60px 32px 100px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .history-page::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(79,142,247,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  .history-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .history-header {
+    margin-bottom: 40px;
+    animation: fadeUp 0.5s ease both;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .history-header .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .history-header h1 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #fff 30%, #7aa8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .new-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #4f8ef7, #7c3aed);
+    border: none;
+    border-radius: 10px;
+    color: #fff !important;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: opacity 0.2s, transform 0.15s;
+    white-space: nowrap;
+  }
+  .new-upload-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* Upload items */
+  .upload-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeUp 0.6s ease both;
+    animation-delay: 0.1s;
+  }
+
+  .upload-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .upload-item:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.12);
+  }
+
+  .upload-file-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    background: rgba(79,142,247,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .upload-info { flex: 1; min-width: 0; }
+  .upload-name {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .upload-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 300;
+  }
+
+  .upload-status {
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 4px 10px;
+    border-radius: 20px;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+  .status-completed { background: rgba(34,211,165,0.1); color: #22d3a5; border: 1px solid rgba(34,211,165,0.2); }
+  .status-failed { background: rgba(244,63,142,0.1); color: #f472b6; border: 1px solid rgba(244,63,142,0.2); }
+  .status-processing { background: rgba(234,179,8,0.1); color: #fbbf24; border: 1px solid rgba(234,179,8,0.2); }
+
+  .result-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: rgba(79,142,247,0.1);
+    border: 1px solid rgba(79,142,247,0.2);
+    border-radius: 8px;
+    color: var(--accent) !important;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .result-btn:hover { background: rgba(79,142,247,0.2); border-color: rgba(79,142,247,0.4); }
+
+  /* Empty state */
+  .empty-state {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 72px 32px;
+    text-align: center;
+    animation: fadeUp 0.6s ease both;
+    animation-delay: 0.1s;
+  }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 16px; display: block; opacity: 0.4; }
+  .empty-state h3 { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .empty-state p { font-size: 0.85rem; color: var(--text-muted); font-weight: 300; margin-bottom: 24px; }
+
+  @media (max-width: 600px) {
+    .history-page { padding: 32px 16px 80px; }
+    .upload-item { flex-wrap: wrap; }
+    .upload-date { display: none; }
+  }
+</style>
+
+<div class="history-page">
+  <div class="history-inner">
+
+    <div class="history-header">
+      <div>
+       
+        <h1>Analysis History</h1>
+      </div>
+      <a href="/upload" class="new-upload-btn">📤 New Upload</a>
+    </div>
+
+    {% if uploads %}
+    <div class="upload-list">
+      {% for upload in uploads %}
+      <div class="upload-item">
+        <div class="upload-file-icon">📄</div>
+        <div class="upload-info">
+          <div class="upload-name">{{ upload.original_filename }}</div>
+          <div class="upload-date">{{ upload.created_at }}</div>
+        </div>
+        <span class="upload-status
+          {% if upload.upload_status == 'completed' %}status-completed
+          {% elif upload.upload_status == 'failed' %}status-failed
+          {% else %}status-processing{% endif %}">
+          {{ upload.upload_status }}
+        </span>
+        {% if upload.upload_status == 'completed' %}
+        <a href="/result/{{ upload.id }}" class="result-btn">View Result →</a>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">📭</span>
+      <h3>No Analysis History Yet</h3>
+      <p>Upload your first dataset to get ML algorithm recommendations.</p>
+      <a href="/upload" class="new-upload-btn">📤 Upload Your First Dataset</a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}
